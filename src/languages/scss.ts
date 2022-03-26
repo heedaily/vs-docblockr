@@ -18,6 +18,7 @@ export class SCSS extends Parser {
       commentClose: config.get('scssCommentClose'),
       commentOpen: config.get('scssCommentOpen'),
       grammar: {
+        namespace:  [],
         class: ['class'],
         function: ['function'],
         identifier: '[a-zA-Z_$0-9]',
@@ -25,7 +26,7 @@ export class SCSS extends Parser {
         types: [],
         variables: [],
       },
-      separator: config.get('scssCommentSeparator'),
+      separator: `${config.get('scssCommentSeparator')} `,
     });
   }
 
@@ -108,6 +109,15 @@ export class SCSS extends Parser {
    * @inheritdoc
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  protected parseNamespace(token: Token, symbols: Symbols): void {
+    return;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/member-ordering
   protected parseClass(token: Token, symbols: Symbols): void {
     return;
   }

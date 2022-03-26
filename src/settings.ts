@@ -54,7 +54,7 @@ export class Settings implements IOptions {
   /**
    * @inheritdoc
    */
-  public separator = ' * ';
+  public separator = ' *  ';
 
   /**
    * @inheritdoc

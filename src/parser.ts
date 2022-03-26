@@ -199,7 +199,8 @@ export abstract class Parser {
    */
   public addVarTag(snippet: SnippetString, type: string): void {
     snippet
-      .appendText(`${this.settings.separator}@var `)
+      // .appendText(`${this.settings.separator}@var `)
+      .appendText(`${this.settings.separator}< @enum `)
       .appendPlaceholder(type);
   }
 
@@ -237,6 +238,7 @@ export abstract class Parser {
         break;
       }
 
+      this.parseNamespace(token, symbols);
       this.parseClass(token, symbols);
       this.parseFunction(token, symbols);
       this.parseParameters(token, symbols);
@@ -318,14 +320,31 @@ export abstract class Parser {
     const { commentClose, commentOpen, eos, separator } = this.settings;
 
     const snippet = new SnippetString(commentOpen + eos);
-
-    snippet
-      .appendText(separator)
-      .appendPlaceholder(`[${tokens.name} description]`);
+    const isScss = (this.grammar.namespace.length == 0)? true : false;
+    if(isScss) {
+      snippet
+        .appendText(separator)
+        .appendPlaceholder(`[${tokens.name} description]`)
+        .appendText(eos)
+        .appendText(separator)
+        .appendPlaceholder(`@group [file name]`);
+    } else {
+      snippet
+        .appendText(separator)
+        .appendPlaceholder(`@brief [${tokens.name} 概要]`)
+        .appendText(eos)
+        .appendText(separator)
+        .appendPlaceholder(`@details [${tokens.name} 説明]`);
+    }
 
     this.renderParamTags(tokens, snippet);
     this.renderReturnTag(tokens, snippet);
     this.renderVarTag(tokens, snippet);
+
+    snippet
+      .appendText(eos)
+      .appendText(separator)
+      .appendPlaceholder(`@todo`);
 
     snippet.appendText(eos + commentClose);
 
@@ -340,13 +359,31 @@ export abstract class Parser {
   public renderEmptyBlock(): SnippetString {
     const { commentClose, commentOpen, eos, separator } = this.settings;
 
-    return new SnippetString()
-      .appendText(commentOpen)
-      .appendText(eos)
-      .appendText(separator)
-      .appendPlaceholder('[description]')
-      .appendText(eos)
-      .appendText(commentClose);
+    if(this.grammar.namespace.length == 0) {
+      // scss
+      return new SnippetString()
+        .appendText(commentOpen)
+        .appendText(eos)
+        .appendText(separator)
+        .appendPlaceholder('[タイトル]')
+        .appendText(eos)
+        .appendText(separator)
+        .appendPlaceholder('@group [ファイル名]')
+        .appendText(eos)
+        .appendText(commentClose);
+    } else {
+      // etc
+      return new SnippetString()
+        .appendText(commentOpen)
+        .appendText(eos)
+        .appendText(separator)
+        .appendPlaceholder('@brief [概要]')
+        .appendText(eos)
+        .appendText(separator)
+        .appendPlaceholder('@details [説明]')
+        .appendText(eos)
+        .appendText(commentClose);
+    }
   }
 
   /**
@@ -379,7 +416,7 @@ export abstract class Parser {
     if (tokens.params.length && tokens.type !== SymbolKind.Variable) {
       if (this.newLinesBetweenTags) {
         // Apply empty line
-        snippet.appendText(this.settings.eos + this.settings.separator);
+        snippet.appendText(this.settings.eos + this.settings.separator.trimRight());
       }
 
       // Determine if any parameters contain defined type information for
@@ -419,7 +456,7 @@ export abstract class Parser {
         snippet.appendText(this.settings.eos);
 
         // Description shortcut
-        const desc = `[${name} description]`;
+        const desc = ` [${name} description]`;
         // Append param to docblock
         this.addParamTag(snippet, typeSpacing, type, nameSpacing, name, descriptionSpacing, desc);
       }
@@ -447,7 +484,7 @@ export abstract class Parser {
 
       if (this.newLinesBetweenTags) {
         // Empty line
-        snippet.appendText(this.settings.eos + this.settings.separator);
+        snippet.appendText(this.settings.eos + this.settings.separator.trimRight());
       }
       snippet.appendText(this.settings.eos);
 
@@ -467,6 +504,13 @@ export abstract class Parser {
       const description = '[return description]';
 
       this.addReturnTag(snippet, typeSpacing, type, spacing, description);
+      if(this.grammar.namespace.length > 0) {
+        snippet.appendText(this.settings.eos);
+        snippet.appendText(this.settings.separator);
+        snippet.appendText('@retval 返される価に関する説明が必要な時に、価毎に追記してください。');
+      }
+
+      snippet.appendText(this.settings.eos);
     }
   }
 
@@ -550,6 +594,14 @@ export abstract class Parser {
     // Get the longest parameter property in list
     return params.reduce((a, b) => Math.max(a, b));
   }
+
+  /**
+   * Parses namespace tokens from the code snippet provided to Acorn
+   *
+   * @param  {Token}    token    The token currently being parsed
+   * @param  {Symbols}  symbols  The parsed symbols
+   */
+   protected abstract parseNamespace(token: Token, symbols: Symbols): void;
 
   /**
    * Parses class tokens from the code snippet provided to Acorn

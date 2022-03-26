@@ -1,5 +1,10 @@
 export interface IGrammar {
   /**
+   * Represents namespace identifiers
+   */
+  namespace: string[];
+
+  /**
    * Represents class identifiers
    */
   class: string[];
@@ -34,9 +39,16 @@ export interface IGrammar {
  * Represents the grammar configuration for a language
  */
 export class Grammar implements IGrammar {
+
   /**
    * @inheritdoc
    */
+   public namespace: string[];
+
+  /**
+   * @inheritdoc
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
   public class: string[];
 
   /**
@@ -65,6 +77,7 @@ export class Grammar implements IGrammar {
   public variables: string[];
 
   constructor(grammar: IGrammar) {
+    this.namespace  = grammar.namespace;
     this.class      = grammar.class;
     this.function   = grammar.function;
     this.identifier = grammar.identifier;

@@ -14,6 +14,9 @@ export class C extends Parser {
   constructor() {
     super({
       grammar: {
+        namespace: [
+          'namespace'
+        ],
         class: [
           'class',
           'struct',
@@ -49,6 +52,22 @@ export class C extends Parser {
   /**
    * @inheritdoc
    */
+  protected parseNamespace(token: Token, symbols: Symbols): void {
+    // Check if the token represents a class identifier
+    if (this.grammar.is(token.value, 'namespace')) {
+      symbols.name = token.value;
+      symbols.type = SymbolKind.Namespace;
+
+      this.done = true;
+
+      return;
+    }
+  }
+
+  /**
+   * @inheritdoc
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
   protected parseClass(token: Token, symbols: Symbols): void {
     // Check if the token represents a class identifier
     if (this.grammar.is(token.value, 'class')) {

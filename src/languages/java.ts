@@ -13,6 +13,9 @@ export class Java extends Parser {
   constructor() {
     super({
       grammar: {
+        namespace: [
+          'namespace'
+        ],
         class: [
           'class',
         ],
@@ -57,6 +60,29 @@ export class Java extends Parser {
   /**
    * @inheritdoc
    */
+  protected parseNamespace(token: Token, symbols: Symbols): void {
+    // Check if the token represents a namespace identifier
+    if (this.grammar.is(token.value, 'namespace')) {
+      symbols.type = SymbolKind.Namespace;
+
+      this.expectName = true;
+
+      return;
+    }
+
+    // Check if the current token represents a valid namespace name
+    if (this.expectName && symbols.type === SymbolKind.Namespace && this.isName(token.value)) {
+      symbols.name = token.value;
+
+      this.expectName = false;
+      this.done = true;
+    }
+  }
+
+  /**
+   * @inheritdoc
+   */
+  // eslint-disable-next-line @typescript-eslint/member-ordering
   protected parseClass(token: Token, symbols: Symbols): void {
     // Check if the token represents a class identifier
     if (this.grammar.is(token.value, 'class')) {
